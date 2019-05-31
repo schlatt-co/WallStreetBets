@@ -1,0 +1,30 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+    id "io.freefair.lombok" version "3.6.4"
+    id 'java'
+    id 'idea'
+}
+
+group 'io.github.jroy'
+
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
+dependencies {
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
+    compileOnly "org.spigotmc:spigot-api:1.14.2-R0.1-SNAPSHOT"
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
