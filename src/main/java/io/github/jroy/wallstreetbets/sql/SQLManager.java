@@ -2,6 +2,7 @@ package io.github.jroy.wallstreetbets.sql;
 
 import io.github.jroy.wallstreetbets.WallStreetBets;
 import io.github.jroy.wallstreetbets.sql.model.Company;
+import io.github.jroy.wallstreetbets.sql.model.Member;
 import io.github.jroy.wallstreetbets.sql.model.Shareholder;
 import io.github.jroy.wallstreetbets.utils.Logger;
 
@@ -15,11 +16,11 @@ public class SQLManager {
   private Connection connection;
 
   private static final String SELECT_COMPANY = "SELECT * FROM `companies` WHERE callsign = ?;";
+  private static final String SELECT_SHARES = "SELECT * FROM `shares` WHERE callsign = ?;";
+  private static final String SELECT_MEMBERS = "SELECT * FROM `members` WHERE callsign = ?;";
   private static final String INSERT_COMPANY = "INSERT INTO `companies` (callsign, name, owner) VALUES (?, ?, ?);";
   private static final String INSERT_COMPANY_MEMBER = "INSERT INTO `members` (member, callsign) VALUES (?, ?);";
   private static final String INSERT_COMPANY_SHAREHOLDER = "INSERT INTO `shares` (shareholder, callsign) VALUES (?, ?);";
-
-  private static final String SELECT_SHARES = "SELECT * FROM `shares` WHERE callsign = ?;";
 
   public SQLManager() throws SQLException, ClassNotFoundException {
     Logger.log("SQLManager: Logging in...");
@@ -117,7 +118,7 @@ public class SQLManager {
     if (!set.next()) {
       throw new SQLException("Invalid Callsign");
     }
-    return new Company(this, set.getInt("id"), set.getString("callsign"), UUID.fromString(set.getString("name")), set.getInt("active_shares"), set.getInt("total_shares"), getShareholders(callsign));
+    return new Company(this, set.getInt("id"), set.getString("callsign"), UUID.fromString(set.getString("name")), set.getInt("active_shares"), set.getInt("total_shares"), getShareholders(callsign), getMembers(callsign));
   }
 
   public Shareholder[] getShareholders(String callsign) throws SQLException {
@@ -129,6 +130,17 @@ public class SQLManager {
       shareholders.add(new Shareholder(this, set.getInt("id"), UUID.fromString(set.getString("shareholder")), set.getString("callsign")));
     }
     return shareholders.toArray(Shareholder[]::new);
+  }
+
+  public Member[] getMembers(String callsign) throws SQLException {
+    PreparedStatement statement = connection.prepareStatement(SELECT_MEMBERS);
+    statement.setString(1, callsign);
+    ResultSet set = statement.executeQuery();
+    List<Member> members = new ArrayList<>();
+    while (set.next()) {
+      members.add(new Member(this, set.getInt("id"), UUID.fromString(set.getString("member")), set.getString("callsign")));
+    }
+    return members.toArray(Member[]::new);
   }
 
   private void connect() throws SQLException, ClassNotFoundException {
