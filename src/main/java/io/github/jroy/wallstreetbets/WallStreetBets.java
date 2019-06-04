@@ -2,6 +2,7 @@ package io.github.jroy.wallstreetbets;
 
 import io.github.jroy.wallstreetbets.sql.SQLManager;
 import io.github.jroy.wallstreetbets.utils.Logger;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 
 public class WallStreetBets extends JavaPlugin {
 
+  @Getter
   private static WallStreetBets instance;
 
   private SQLManager sqlManager;
@@ -34,9 +36,5 @@ public class WallStreetBets extends JavaPlugin {
     getConfig().options().copyDefaults(true);
     saveConfig();
     reloadConfig();
-  }
-
-  public static WallStreetBets getInstance() {
-    return instance;
   }
 }
