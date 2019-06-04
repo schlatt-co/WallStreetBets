@@ -4,6 +4,7 @@ import io.github.jroy.wallstreetbets.sql.SQLManager;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -12,11 +13,26 @@ public class Company {
 
   private final SQLManager sqlManager;
 
-  private final int id;
+  private final Integer id;
   private final String callsign;
   private final UUID ownerUuid;
-  private int activeShares;
   private int totalShares;
-  private final Shareholder[] shareholders;
-  private final Member[] members;
+  private List<Shareholder> shareholders;
+  private List<Member> members;
+
+  public boolean addMember(UUID uuid) {
+    if (sqlManager.addCompanyMember(callsign, uuid)) {
+      members.add(new Member(sqlManager, null, uuid, callsign));
+      return true;
+    }
+    return false;
+  }
+
+  public boolean addShareholder(UUID uuid) {
+    if (sqlManager.addShareholder(callsign, uuid)) {
+      shareholders.add(new Shareholder(sqlManager, null, uuid, callsign));
+      return true;
+    }
+    return false;
+  }
 }
