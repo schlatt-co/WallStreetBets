@@ -20,6 +20,7 @@ public class SQLManager {
   private static final String SELECT_SHARE = "SELECT * FROM `shares` WHERE callsign = ? AND shareholder = ?;";
   private static final String SELECT_MEMBERS = "SELECT * FROM `members` WHERE callsign = ?;";
   private static final String SELECT_MEMBER = "SELECT * FROM `members` WHERE callsign = ? AND member = ?;";
+  private static final String SELECT_COMPANY_FROM_UUID = "SELECT * FROM `companies` WHERE owner = ?;";
   private static final String INSERT_COMPANY = "INSERT INTO `companies` (callsign, name, owner) VALUES (?, ?, ?);";
   private static final String INSERT_COMPANY_MEMBER = "INSERT INTO `members` (member, callsign) VALUES (?, ?);";
   private static final String INSERT_COMPANY_SHAREHOLDER = "INSERT INTO `shares` (shareholder, callsign) VALUES (?, ?);";
@@ -28,6 +29,8 @@ public class SQLManager {
   private static final String REMOVE_COMPANY_SHAREHOLDER = "DELETE FROM `shares` WHERE callsign = ? AND member = ?;";
   private static final String REMOVE_ALL_COMPANY_MEMBERS = "DELETE FROM `members` WHERE callsign = ?;";
   private static final String REMOVE_ALL_COMPANY_SHAREHOLDERS = "DELETE FROM `shares` WHERE callsign = ?;";
+  private static final String INCREMENT_COMPANY_WORTH = "UPDATE `companies` SET worth = worth + ? WHERE callsign = ?";
+  private static final String UPDATE_COMPANY_SHARES = "UPDATE `companies` SET total_shares = ? WHERE callsign = ?";
 
   public SQLManager() throws SQLException, ClassNotFoundException {
     Logger.log("SQLManager: Logging in...");
@@ -220,6 +223,23 @@ public class SQLManager {
   }
 
   /**
+   * Gets the callsign of a company from a UUID
+   * @param uuid The UUID of the owner of the company.
+   * @return The ticker for company, usually 3 english characters OR null if company doesn't exist
+   */
+  public String getCallsign(UUID uuid) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(SELECT_COMPANY_FROM_UUID);
+      statement.setString(1, uuid.toString());
+      ResultSet rs = statement.executeQuery();
+      if (rs.next()) {
+        return rs.getString("callsign");
+      }
+    } catch (SQLException ignored) {}
+    return null;
+  }
+
+  /**
    * Fetches details of a company and provides helper methods to set data.
    * @param callsign The ticker for company, usually 3 english characters.
    * @return The company object.
@@ -232,7 +252,7 @@ public class SQLManager {
     if (!set.next()) {
       throw new SQLException("Invalid Callsign");
     }
-    return new Company(this, set.getInt("id"), set.getString("callsign"), UUID.fromString(set.getString("name")), set.getInt("total_shares"), getShareholders(callsign), getMembers(callsign));
+    return new Company(this, set.getInt("id"), set.getString("callsign"), set.getString("name"), UUID.fromString(set.getString("name")), set.getInt("total_shares"), set.getInt("worth"), getShareholders(callsign), getMembers(callsign));
   }
 
   /**
@@ -269,6 +289,44 @@ public class SQLManager {
     return members;
   }
 
+  /**
+   * Adds a worth to a company
+   * @param callsign The ticker for company, usually 3 english characters.
+   * @param amount The amount of money to add to a company
+   * @return True if success.
+   */
+  public boolean addWorth(String callsign, int amount) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(INCREMENT_COMPANY_WORTH);
+      statement.setInt(1, amount);
+      statement.setString(2, callsign);
+      statement.executeUpdate();
+      return true;
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  /**
+   * Updates the total share count of the company.
+   * @param callsign The ticker for company, usually 3 english characters.
+   * @param count The amount of shares to cap the company at.
+   * @return True if success.
+   */
+  public boolean setTotalShares(String callsign, int count) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(UPDATE_COMPANY_SHARES);
+      statement.setInt(1, count);
+      statement.setString(2, callsign);
+      statement.executeUpdate();
+      return true;
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
   private void connect() throws SQLException, ClassNotFoundException {
     if (connection != null && !connection.isClosed()) {
       return;
@@ -285,7 +343,7 @@ public class SQLManager {
   }
 
   private void loadTables() throws SQLException {
-    connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS `companies` ( `id` INT(50) NOT NULL AUTO_INCREMENT , `callsign` VARCHAR(255) NOT NULL , `name` VARCHAR(255) NOT NULL , `owner` VARCHAR(255) NOT NULL , `total_shares` INT(255) NOT NULL DEFAULT '0' , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
+    connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS `companies` ( `id` INT(50) NOT NULL AUTO_INCREMENT , `callsign` VARCHAR(255) NOT NULL , `name` VARCHAR(255) NOT NULL , `owner` VARCHAR(255) NOT NULL , `total_shares` INT(255) NOT NULL DEFAULT '0' , `worth` INT(255) NOT NULL DEFAULT '0' , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
     connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS `shares` ( `id` INT(50) NOT NULL AUTO_INCREMENT , `shareholder` VARCHAR(255) NOT NULL , `callsign` VARCHAR(255) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
     connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS `members` ( `id` INT(50) NOT NULL AUTO_INCREMENT , `member` VARCHAR(255) NOT NULL , `callsign` VARCHAR(255) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
   }

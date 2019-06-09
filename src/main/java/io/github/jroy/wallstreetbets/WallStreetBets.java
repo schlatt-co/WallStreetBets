@@ -1,5 +1,6 @@
 package io.github.jroy.wallstreetbets;
 
+import io.github.jroy.wallstreetbets.commands.CompanyCommand;
 import io.github.jroy.wallstreetbets.commands.ManagerCommand;
 import io.github.jroy.wallstreetbets.sql.SQLManager;
 import io.github.jroy.wallstreetbets.utils.Logger;
@@ -31,6 +32,7 @@ public class WallStreetBets extends JavaPlugin {
       return;
     }
     getCommand("wallstreetmanager").setExecutor(new ManagerCommand(sqlManager));
+    getCommand("company").setExecutor(new CompanyCommand(sqlManager));
   }
 
   private void loadConfig() {

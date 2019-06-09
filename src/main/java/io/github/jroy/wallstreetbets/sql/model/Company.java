@@ -15,8 +15,10 @@ public class Company {
 
   private final Integer id;
   private final String callsign;
+  private final String name;
   private final UUID ownerUuid;
   private int totalShares;
+  private int worth;
   private List<Shareholder> shareholders;
   private List<Member> members;
 
@@ -31,6 +33,14 @@ public class Company {
   public boolean addShareholder(UUID uuid) {
     if (sqlManager.addShareholder(callsign, uuid)) {
       shareholders.add(new Shareholder(sqlManager, null, uuid, callsign));
+      return true;
+    }
+    return false;
+  }
+
+  public boolean addWorth(int amount) {
+    if (sqlManager.addWorth(callsign, amount)) {
+      worth = worth + amount;
       return true;
     }
     return false;
