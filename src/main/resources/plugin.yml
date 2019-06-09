@@ -3,3 +3,7 @@ author: JRoy
 version: 0.1
 api-version: 1.14
 main: io.github.jroy.wallstreetbets.WallStreetBets
+commands:
+  wallstreetmanager:
+    description: Wallstreet command
+    usage: /wallstreetmanager

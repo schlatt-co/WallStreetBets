@@ -23,8 +23,11 @@ public class SQLManager {
   private static final String INSERT_COMPANY = "INSERT INTO `companies` (callsign, name, owner) VALUES (?, ?, ?);";
   private static final String INSERT_COMPANY_MEMBER = "INSERT INTO `members` (member, callsign) VALUES (?, ?);";
   private static final String INSERT_COMPANY_SHAREHOLDER = "INSERT INTO `shares` (shareholder, callsign) VALUES (?, ?);";
+  private static final String REMOVE_COMPANY = "DELETE FROM `companies` WHERE callsign = ?;";
   private static final String REMOVE_COMPANY_MEMBER = "DELETE FROM `members` WHERE callsign = ? AND member = ?;";
   private static final String REMOVE_COMPANY_SHAREHOLDER = "DELETE FROM `shares` WHERE callsign = ? AND member = ?;";
+  private static final String REMOVE_ALL_COMPANY_MEMBERS = "DELETE FROM `members` WHERE callsign = ?;";
+  private static final String REMOVE_ALL_COMPANY_SHAREHOLDERS = "DELETE FROM `shares` WHERE callsign = ?;";
 
   public SQLManager() throws SQLException, ClassNotFoundException {
     Logger.log("SQLManager: Logging in...");
@@ -57,6 +60,23 @@ public class SQLManager {
   }
 
   /**
+   * Deletes a company.
+   * @param callsign The ticker for company, usually 3 english characters.
+   * @return True if success.
+   */
+  public boolean deleteCompany(String callsign) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(REMOVE_COMPANY);
+      statement.setString(1, callsign);
+      statement.executeUpdate();
+      return true;
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  /**
    * Adds a member to a company.
    * @param callsign The ticker for company, usually 3 english characters.
    * @param member The UUID of the user being added to the company.
@@ -76,6 +96,20 @@ public class SQLManager {
   }
 
   /**
+   * Purges all members from a company.
+   * @param callsign The ticker for company, usually 3 english characters.
+   */
+  public void deleteCompanyMembers(String callsign) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(REMOVE_ALL_COMPANY_MEMBERS);
+      statement.setString(1, callsign);
+      statement.executeUpdate();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Rewards a share to a shareholder.
    * @param callsign The ticker for company, usually 3 english characters.
    * @param shareholder The UUID of the target shareholder.
@@ -91,6 +125,20 @@ public class SQLManager {
     } catch (SQLException e) {
       e.printStackTrace();
       return false;
+    }
+  }
+
+  /**
+   * Purges all shareholders from a company.
+   * @param callsign The ticker for company, usually 3 english characters.
+   */
+  public void deleteCompanyShareholders(String callsign) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(REMOVE_ALL_COMPANY_SHAREHOLDERS);
+      statement.setString(1, callsign);
+      statement.executeUpdate();
+    } catch (SQLException e) {
+      e.printStackTrace();
     }
   }
 

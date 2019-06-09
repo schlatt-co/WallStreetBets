@@ -12,14 +12,16 @@ sourceCompatibility = 1.8
 repositories {
     jcenter()
     mavenCentral()
+    mavenLocal()
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots' }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 dependencies {
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     compileOnly "org.spigotmc:spigot-api:1.14.2-R0.1-SNAPSHOT"
     compileOnly 'org.projectlombok:lombok:1.18.8'
+    compileOnly files('libs/ess.jar')
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
 }
 

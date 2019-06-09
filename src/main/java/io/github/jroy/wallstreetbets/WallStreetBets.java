@@ -1,5 +1,6 @@
 package io.github.jroy.wallstreetbets;
 
+import io.github.jroy.wallstreetbets.commands.ManagerCommand;
 import io.github.jroy.wallstreetbets.sql.SQLManager;
 import io.github.jroy.wallstreetbets.utils.Logger;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class WallStreetBets extends JavaPlugin {
 
   private SQLManager sqlManager;
 
+  @SuppressWarnings("ConstantConditions")
   @Override
   public void onEnable() {
     Logger.log("Loading WallStreetBets...");
@@ -28,6 +30,7 @@ public class WallStreetBets extends JavaPlugin {
       Bukkit.getPluginManager().disablePlugin(this);
       return;
     }
+    getCommand("wallstreetmanager").setExecutor(new ManagerCommand(sqlManager));
   }
 
   private void loadConfig() {
